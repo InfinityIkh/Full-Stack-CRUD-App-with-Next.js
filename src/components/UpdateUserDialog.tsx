@@ -4,12 +4,26 @@ import { Pencil, X } from "lucide-react"
 import Button from "./ui/Button"
 import { useRef, useState } from "react"
 import InputField from "./ui/InputField"
+import { useRouter } from "next/navigation"
+import { userApi } from "../lib/api/api"
 import axios from "axios"
 
+type ValidationErrorResponse = {
+    success: false,
+    error: {
+        username?: string[],
+        email?: string[]
+    }
+}
 
-const UpdateUserDialog = () => {
+const UpdateUserDialog = ( {id} : { id : number }) => {
+    const router = useRouter()
     const DialogRef = useRef<HTMLDialogElement>(null)
     const [form, setForm] = useState({
+        username: "",
+        email: ""
+    })
+        const [error, setError] = useState({
         username: "",
         email: ""
     })
@@ -25,6 +39,22 @@ const UpdateUserDialog = () => {
             ...form,
             [e.currentTarget.name]: e.currentTarget.value,
         })
+    }
+    
+    const handleUpdateUser = async () => {
+        try {
+            await userApi.updateUser(id ,form)
+            DialogRef.current?.close()
+            router.refresh()
+        } catch (error: unknown) {
+            if (axios.isAxiosError<ValidationErrorResponse>(error)) {
+                const errors = error.response?.data?.error
+                setError({
+                    username: errors?.username?.[0] ?? "",
+                    email: errors?.email?.[0] ?? "",
+                })
+            }
+        }
     }
 
     return (
@@ -49,8 +79,8 @@ const UpdateUserDialog = () => {
                             <p className="leading-relaxed text-slate-700 text-start">Please review the information carefully before updating this user’s account.</p>
                             <br></br>
                             <form className="flex flex-col justify-start" onSubmit={(e) => e.preventDefault()}>
-                                <InputField onChange={(e) => handleChange(e)} inputName="username" labelVal="Enter Username" inputType="text" placeholder="griffith" />
-                                <InputField onChange={(e) => handleChange(e)} inputName="email" labelVal="Enter Email" inputType="email" placeholder="griffith@gmail.com" />
+                                <InputField error={error.username} onChange={(e) => handleChange(e)} inputName="username" labelVal="Enter Username" inputType="text" placeholder="griffith" />
+                                <InputField error={error.email} onChange={(e) => handleChange(e)} inputName="email" labelVal="Enter Email" inputType="email" placeholder="griffith@gmail.com" />
                             </form>
                         </main>
                         <footer
@@ -63,6 +93,7 @@ const UpdateUserDialog = () => {
                                 Cancel
                             </button>
                             <button
+                                onClick={handleUpdateUser}
                                 className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
                             >
                                 Update
