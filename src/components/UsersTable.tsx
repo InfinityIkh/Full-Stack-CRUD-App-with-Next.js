@@ -1,4 +1,3 @@
-import { Pencil, Trash2 } from "lucide-react"
 import DeleteUserDialog from "./DeleteUserDialog"
 import UpdateUserDialog from "./UpdateUserDialog"
 export type User = {
@@ -31,8 +30,8 @@ const UsersTable = ({ users }: tableProps) => {
             <td className="px-5 py-3.5 font-medium text-neutral-900">{user.username}</td>
             <td className="px-5 py-3.5 text-neutral-600">{user.email}</td>
             <td className="px-5 py-3.5 text-neutral-500">{user.createdAt.toLocaleString()}</td>
-            <td className="px-5 py-3 text-center"><UpdateUserDialog /></td>
-            <td className="px-5 py-3 text-center"><DeleteUserDialog /></td>
+            <td className="px-5 py-3 text-center"><UpdateUserDialog id={user.id} /></td>
+            <td className="px-5 py-3 text-center"><DeleteUserDialog id={user.id}/></td>
           </tr>
         ))}
       </tbody>
