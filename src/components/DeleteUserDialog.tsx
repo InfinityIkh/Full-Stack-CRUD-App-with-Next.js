@@ -3,9 +3,12 @@
 import { Trash2 ,X } from "lucide-react"
 import Button from "./ui/Button"
 import { useRef } from "react"
+import { userApi } from "../lib/api/api"
+import { useRouter } from "next/navigation"
 
 
-const DeleteUserDialog = () => {
+const DeleteUserDialog = ( {id} : { id : number} ) => {
+    const router = useRouter()
     const DialogRef = useRef<HTMLDialogElement>(null)
 
     const handleOpen = () => {
@@ -13,6 +16,15 @@ const DeleteUserDialog = () => {
     }
     const handleClose = () => {
         DialogRef.current?.close()
+    }
+    const handleDeleteUser = async () => {
+        try{
+            await userApi.deleteUser(id)
+            DialogRef.current?.close()
+            router.refresh()
+        }catch(error){
+            console.log(error)
+        }
     }
     return (
         <div>
@@ -48,6 +60,7 @@ const DeleteUserDialog = () => {
                                 Cancel
                             </button>
                             <button
+                                onClick={handleDeleteUser}
                                 className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
                             >
                                 Delete
