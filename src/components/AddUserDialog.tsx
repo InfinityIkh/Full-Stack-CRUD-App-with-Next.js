@@ -4,12 +4,26 @@ import { UserPlus, X } from "lucide-react"
 import Button from "./ui/Button"
 import { useRef, useState } from "react"
 import InputField from "./ui/InputField"
+import { userApi } from "../lib/api/api"
 import axios from "axios"
+import { useRouter } from "next/navigation"
 
+type ValidationErrorResponse = {
+    success: false,
+    error: {
+        username?: string[],
+        email?: string[]
+    }
+}
 
 const AddUserDialog = () => {
     const DialogRef = useRef<HTMLDialogElement>(null)
+    const router = useRouter()
     const [form, setForm] = useState({
+        username: "",
+        email: ""
+    })
+    const [error, setError] = useState({
         username: "",
         email: ""
     })
@@ -25,6 +39,22 @@ const AddUserDialog = () => {
             ...form,
             [e.currentTarget.name]: e.currentTarget.value,
         })
+    }
+
+    const handleClickAddUser = async () => {
+        try {
+            await userApi.createUser(form)
+            DialogRef.current?.close()
+            router.refresh()
+        } catch (error: unknown) {
+            if (axios.isAxiosError<ValidationErrorResponse>(error)) {
+                const errors = error.response?.data?.error
+                setError({
+                    username: errors?.username?.[0] ?? "",
+                    email: errors?.email?.[0] ?? "",
+                })
+            }
+        }
     }
 
     return (
@@ -49,8 +79,8 @@ const AddUserDialog = () => {
                             <p className="leading-relaxed text-slate-700 text-start"> Please make sure all the information is correct before creating the new user account.</p>
                             <br></br>
                             <form onSubmit={(e) => e.preventDefault()}>
-                                <InputField onChange={(e) => handleChange(e)} inputName="username" labelVal="Enter Username" inputType="text" placeholder="griffith" />
-                                <InputField onChange={(e) => handleChange(e)} inputName="email" labelVal="Enter Email" inputType="email" placeholder="griffith@gmail.com" />
+                                <InputField error={error.username} onChange={(e) => handleChange(e)} inputName="username" labelVal="Enter Username" inputType="text" placeholder="griffith" />
+                                <InputField error={error.email} onChange={(e) => handleChange(e)} inputName="email" labelVal="Enter Email" inputType="email" placeholder="griffith@gmail.com" />
                             </form>
                         </main>
                         <footer
@@ -63,6 +93,7 @@ const AddUserDialog = () => {
                                 Cancel
                             </button>
                             <button
+                                onClick={handleClickAddUser}
                                 className="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-gray-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
                             >
                                 Add User
