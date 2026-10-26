@@ -1,10 +1,10 @@
-import axios from "axios"
 import { User } from "../components/UsersTable"
 import UsersTable from "../components/UsersTable"
 import AddUserDialog from "../components/AddUserDialog"
+import { userApi } from "../lib/api/api"
 
 const Home = async () => {
-  const response = await axios.get("http://127.0.0.1:3000/api/v1/users")
+  const response = await userApi.getUsers()
   const users : User[] = response.data.users
   return (
     <div className="flex flex-col gap-6 mx-auto max-w-7xl p-4 md:p-24">
