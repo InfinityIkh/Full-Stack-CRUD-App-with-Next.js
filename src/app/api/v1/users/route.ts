@@ -36,8 +36,12 @@ export async function POST(request : NextRequest) {
         if(user){
             return NextResponse.json({
                 success : false,
-                message : "user email already exists",
-            })
+                error : {
+                    email : [
+                        "user email already exists"
+                    ]
+                },
+            },{ status : 422 })
         }
         const CreatedUser = await Createuser(data)
         return NextResponse.json({
